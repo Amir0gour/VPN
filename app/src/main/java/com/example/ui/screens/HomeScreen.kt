@@ -294,6 +294,23 @@ fun HomeScreen(
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End
+                    ) {
+                        Button(
+                            onClick = onConnectClicked,
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = CyberCyan,
+                                contentColor = Color(0xFF031623)
+                            ),
+                            shape = RoundedCornerShape(8.dp),
+                            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 14.dp, vertical = 6.dp)
+                        ) {
+                            Text("Retry Connection", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                        }
+                    }
                 }
             }
         }

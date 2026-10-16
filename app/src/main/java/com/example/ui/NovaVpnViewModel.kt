@@ -152,6 +152,11 @@ class NovaVpnViewModel(application: Application) : AndroidViewModel(application)
             return
         }
 
+        // Set connecting state immediately to dismiss any previous error
+        NovaVpnService.updateState(
+            VpnConnectionState.Connecting(server, "Initiating WireGuard handshake with ${server.city}...")
+        )
+
         val dnsPrimary = when (settings.dnsProvider) {
             DnsProvider.CUSTOM -> settings.customDnsPrimary.ifBlank { "1.1.1.1" }
             else -> settings.dnsProvider.primaryIp
@@ -252,8 +257,12 @@ class NovaVpnViewModel(application: Application) : AndroidViewModel(application)
     fun refreshPublicIp() {
         viewModelScope.launch {
             val isConnected = connectionState.value is VpnConnectionState.Connected
-            val activeCountry = (connectionState.value as? VpnConnectionState.Connected)?.server?.country ?: ""
-            val info = IpDiagnosticService.fetchPublicIpInfo(isConnected, activeCountry)
+            val activeServer = (connectionState.value as? VpnConnectionState.Connected)?.server ?: selectedServer.value
+            val info = IpDiagnosticService.fetchPublicIpInfo(
+                isVpnConnected = isConnected,
+                vpnServerCountry = activeServer.country,
+                vpnServerIp = activeServer.endpointIp
+            )
             repository.updatePublicIpInfo(info)
         }
     }

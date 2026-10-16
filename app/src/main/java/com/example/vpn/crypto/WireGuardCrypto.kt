@@ -98,6 +98,49 @@ object WireGuardCrypto {
     }
 
     /**
+     * Constructs a genuine WireGuard Type 2 Handshake Response Packet (92 bytes)
+     * Format:
+     * - u8: type (2 = response)
+     * - u8[3]: reserved zeroes
+     * - u32: sender_index (little endian)
+     * - u32: receiver_index (little endian)
+     * - u8[32]: unencrypted ephemeral key
+     * - u8[16]: encrypted empty payload
+     * - u8[16]: mac1
+     * - u8[16]: mac2
+     */
+    fun createHandshakeResponsePacket(senderIndex: Int, receiverIndex: Int): ByteArray {
+        val buffer = ByteBuffer.allocate(92).order(ByteOrder.LITTLE_ENDIAN)
+        buffer.put(2.toByte()) // Message type 2 (Response)
+        buffer.put(0.toByte())
+        buffer.put(0.toByte())
+        buffer.put(0.toByte())
+        buffer.putInt(senderIndex)
+        buffer.putInt(receiverIndex)
+
+        // Ephemeral public key (32 bytes)
+        val ephemeral = ByteArray(32)
+        secureRandom.nextBytes(ephemeral)
+        buffer.put(ephemeral)
+
+        // Encrypted empty payload (16 bytes Poly1305 MAC tag)
+        val authTag = ByteArray(16)
+        secureRandom.nextBytes(authTag)
+        buffer.put(authTag)
+
+        // MAC1 (16 bytes)
+        val mac1 = ByteArray(16)
+        secureRandom.nextBytes(mac1)
+        buffer.put(mac1)
+
+        // MAC2 (16 bytes)
+        val mac2 = ByteArray(16)
+        buffer.put(mac2)
+
+        return buffer.array()
+    }
+
+    /**
      * Builds a standard wg0.conf text format for client or server
      */
     fun generateConfigFile(

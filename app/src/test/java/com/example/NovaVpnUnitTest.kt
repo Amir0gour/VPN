@@ -61,4 +61,13 @@ class NovaVpnUnitTest {
         assertEquals("9.9.9.9", DnsProvider.QUAD9.primaryIp)
         assertEquals(51820, VpnProtocol.WIREGUARD.port)
     }
+
+    @Test
+    fun testWireGuardHandshakeResponsePacketStructure() {
+        val response = WireGuardCrypto.createHandshakeResponsePacket(senderIndex = 2, receiverIndex = 1)
+        // WireGuard Type 2 Handshake Response must be exactly 92 bytes
+        assertEquals(92, response.size)
+        // First byte must be message type 2 (Response)
+        assertEquals(2.toByte(), response[0])
+    }
 }
