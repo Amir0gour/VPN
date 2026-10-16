@@ -1,0 +1,6 @@
+{
+  "name": "NovaVPN",
+  "description": "High-speed encrypted VPN with WireGuard protocol, kill switch, and real-time DNS leak protection.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

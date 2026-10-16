@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: novavpn-db
+    environment:
+      POSTGRES_DB: novavpn
+      POSTGRES_USER: novavpn_user
+      POSTGRES_PASSWORD: novavpn_secure_password_replace_in_prod
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./server/src/schema.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    networks:
+      - novavpn-net
+
+  api:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: novavpn-api
+    depends_on:
+      - postgres
+    environment:
+      NODE_ENV: production
+      PORT: 4000
+      JWT_SECRET: ${JWT_SECRET:-novavpn-super-secret-development-key-256}
+      ADMIN_API_KEY: ${ADMIN_API_KEY:-novavpn-admin-secure-token}
+      DATABASE_URL: postgres://novavpn_user:novavpn_secure_password_replace_in_prod@postgres:5432/novavpn
+      WG_INTERFACE: wg0
+      WG_DRY_RUN: "false"
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+    ports:
+      - "4000:4000"
+      - "51820:51820/udp"
+    restart: unless-stopped
+    networks:
+      - novavpn-net
+
+volumes:
+  pgdata:
+
+networks:
+  novavpn-net:
+    driver: bridge

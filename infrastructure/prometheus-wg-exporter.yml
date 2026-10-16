@@ -1,0 +1,27 @@
+# NovaVPN Server Monitoring Configuration
+# Prometheus + WireGuard Exporter
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: 'novavpn-api'
+    metrics_path: '/api/health'
+    static_configs:
+      - targets: ['api:4000']
+
+  - job_name: 'wireguard-nodes'
+    static_configs:
+      - targets: ['localhost:9586'] # wireguard_exporter
+        labels:
+          role: 'vpn-gateway'
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: ['alertmanager:9093']
+
+# Alerting Rules
+# - HighServerLoad: Triggers when connected peers exceed 85% of capacity
+# - GatewayDown: Triggers when WireGuard handshake response fails > 1 minute
